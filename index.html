@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Mines</title>
+    <link rel="icon" type="image/png" href="media/favicon.ico">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/overlay.css">
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+
+    <style type="text/css">
+        #canvas td {
+            width: 20px;
+            height: 20px;
+        }
+
+        #canvas table {
+            border: 1px solid #000000;
+        }
+
+        #canvas td .on {
+            background-color: #999999;
+            border: 1px solid #000000;
+        }
+
+        #canvas td .off {
+            background: none;
+        }
+
+        #urmatoarea td {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+    <script type="text/javascript">
+        var clasaPiese = function () {
+            var a = new Array();
+            this.addFigura = function (c) {
+                var b = a.length;
+                a.push(b);
+                a[b] = c
+            };
+            this.getRand = function () {
+                var b = Math.round(Math.random() * (a.length - 1));
+                return a[b]
+            }
+        };
+        clasaPiese.prototype.length = function () {
+            return arr.length
+        };
+        var clasaPiesa = function (a, d, b) {
+            this.arr = c(a, d);
+            this.culoare = b;
+            function c(e, k) {
+                var h = new Array(e);
+                for (var g = 0; g < e; g++) {
+                    h[g] = new Array(k);
+                    for (var f = 0; f < k; f++) {
+                        h[g][f] = 0
+                    }
+                }
+                return h
+            }
+
+            this.set = function (e, f) {
+                this.arr[e][f] = this.culoare
+            };
+            this.get = function (e, f) {
+                return this.arr[e][f]
+            };
+            this.rotatie = function () {
+                var k = this.arr.length;
+                var h = this.arr[0].length;
+                var e = new Array(h);
+                for (var g = 0; g < h; g++) {
+                    e[g] = new Array(k)
+                }
+                for (var g = 0; g < k; g++) {
+                    for (var f = 0; f < h; f++) {
+                        e[f][(k - 1 - g)] = this.arr[g][f]
+                    }
+                }
+                this.arr = e
+            };
+            this.preview = function () {
+                var k = this.arr.length;
+                var h = this.arr[0].length;
+                var g = "<table>";
+                for (var f = 0; f < k; f++) {
+                    g += "<tr>";
+                    for (var e = 0; e < h; e++) {
+                        g += '<td  bgcolor="';
+                        if (this.arr[f][e] != 0) {
+                            g += this.arr[f][e]
+                        }
+                        g += '">&nbsp;</td>'
+                    }
+                    g += "</tr>"
+                }
+                g += "</table>";
+                return g
+            };
+            this.getLatime = function () {
+                return this.arr.length
+            };
+            this.getLungime = function () {
+                return this.arr[0].length
+            }
+        };
+        var piese = new clasaPiese();
+        var tempPiesa = new clasaPiesa(2, 3, "#FF0000");
+        tempPiesa.set(0, 0);
+        tempPiesa.set(0, 1);
+        tempPiesa.set(1, 1);
+        tempPiesa.set(1, 2);
+        piese.addFigura(tempPiesa);
+        var tempPiesa = new clasaPiesa(1, 4, "#00FF00");
+        tempPiesa.set(0, 0);
+        tempPiesa.set(0, 1);
+        tempPiesa.set(0, 2);
+        tempPiesa.set(0, 3);
+        piese.addFigura(tempPiesa);
+        var tempPiesa = new clasaPiesa(2, 3, "#2984D7");
+        tempPiesa.set(0, 1);
+        tempPiesa.set(1, 0);
+        tempPiesa.set(1, 1);
+        tempPiesa.set(0, 2);
+        piese.addFigura(tempPiesa);
+        var tempPiesa = new clasaPiesa(2, 3, "#CCCCCC");
+        tempPiesa.set(0, 1);
+        tempPiesa.set(1, 0);
+        tempPiesa.set(1, 1);
+        tempPiesa.set(1, 2);
+        piese.addFigura(tempPiesa);
+        var tempPiesa = new clasaPiesa(2, 2, "#DE397B");
+        tempPiesa.set(0, 0);
+        tempPiesa.set(0, 1);
+        tempPiesa.set(1, 0);
+        tempPiesa.set(1, 1);
+        piese.addFigura(tempPiesa);
+        var tempPiesa = new clasaPiesa(2, 3, "#259463");
+        tempPiesa.set(0, 0);
+        tempPiesa.set(0, 1);
+        tempPiesa.set(0, 2);
+        tempPiesa.set(1, 2);
+        piese.addFigura(tempPiesa);
+        var tempPiesa = new clasaPiesa(2, 3, "#BD6B31");
+        tempPiesa.set(1, 0);
+        tempPiesa.set(1, 1);
+        tempPiesa.set(1, 2);
+        tempPiesa.set(0, 2);
+        piese.addFigura(tempPiesa);
+        var clasaCanvas = function (a, c) {
+            this.x = a;
+            this.y = c;
+            function b(e, h) {
+                var d = new Array(e);
+                for (var g = 0; g < e; g++) {
+                    d[g] = new Array(h);
+                    for (var f = 0; f < h; f++) {
+                        d[g][f] = 0
+                    }
+                }
+                return d
+            }
+
+            this.arr = b(a, c);
+            this.get = function (d, e) {
+                return this.arr[d][e]
+            };
+            this.set = function (d, f, e) {
+                this.arr[d][f] = e
+            };
+            this.reset = function () {
+                this.arr = b(this.x, this.y)
+            }
+        };
+        var canvas = new clasaCanvas(20, 15);
+        var clasaTetris = function (b, a) {
+            this.piese = b;
+            this.canvas = a;
+            this.afisare = document.getElementById("canvas");
+            this.reset = function () {
+                this.piesaCurenta = null;
+                this.piesaUrmatoare = this.piese.getRand();
+                this.piesaCurentaX = 0;
+                this.piesaCurentaY = 0;
+                this.scor = 0;
+                document.getElementById("scor").innerHTML = this.scor;
+                this.viteza = 1000;
+                this.timer;
+                this.finis = false;
+                this.canvas.reset();
+                document.getElementById("play").innerHTML = "Pause"
+            };
+            this.afisazaTabel = function () {
+                var h = document.createElement("table");
+                var e = document.createElement("tbody");
+                h.appendChild(e);
+                var g = document.createDocumentFragment();
+                for (var f = 0; f < this.canvas.x; f++) {
+                    var k = document.createElement("tr");
+                    e.appendChild(k);
+                    for (var d = 0; d < this.canvas.y; d++) {
+                        var l = document.createElement("td");
+                        l.setAttribute("id", "cellX" + f + "Y" + d);
+                        k.appendChild(l);
+                        var c = document.createTextNode(" ");
+                        l.appendChild(c);
+                        if (this.canvas.get(f, d) == 0) {
+                            l.bgColor = ""
+                        } else {
+                            l.bgColor = this.canvas.get(f, d)
+                        }
+                    }
+                }
+                this.afisare.innerHTML = "";
+                this.afisare.appendChild(h)
+            };
+            this.play = function () {
+                tetris.afisazaTabel();
+                if (tetris.piesaCurenta == null) {
+                    tetris.getPiesaUrmatoare()
+                }
+                tetris.afisazaPiesa();
+                if (tetris.incearcaPiesaCurenta(1, 0)) {
+                    tetris.piesaCurentaX++
+                } else {
+                    tetris.embedCurenta();
+                    tetris.piesaCurenta = null;
+                    tetris.piesaCurentaX = 0;
+                    tetris.piesaCurentaY = 0
+                }
+            };
+            this.getPiesaUrmatoare = function () {
+                this.piesaCurenta = this.piesaUrmatoare;
+                this.piesaUrmatoare = this.piese.getRand();
+                var e = Math.round(Math.random() * 4);
+                for (var d = 0; d < e; d++) {
+                    this.piesaUrmatoare.rotatie()
+                }
+                document.getElementById("urmatoarea").innerHTML = this.piesaUrmatoare.preview();
+                this.piesaCurentaX = 0;
+                var c = Math.ceil(this.piesaCurenta.getLungime() / 2);
+                var f = Math.ceil(this.canvas.y / 2);
+                this.piesaCurentaY = f - c
+            };
+            this.afisazaPiesa = function () {
+                var c = this.piesaCurentaX;
+                var h = this.piesaCurentaY;
+                var g = this.piesaCurenta.getLatime();
+                var f = this.piesaCurenta.getLungime();
+                for (var e = 0; e < g; e++) {
+                    for (var d = 0; d < f; d++) {
+                        if (this.piesaCurenta.get(e, d) != 0) {
+                            document.getElementById("cellX" + (e + c) + "Y" + (d + h)).bgColor = this.piesaCurenta.get(e, d)
+                        }
+                    }
+                }
+            };
+            this.incearcaPiesaCurenta = function (n, m) {
+                var l = this.piesaCurentaX + n;
+                var k = this.piesaCurentaY + m;
+                var e = this.piesaCurenta.getLatime();
+                var c = this.piesaCurenta.getLungime();
+                var f = true;
+                var d = false;
+                if (e + l >= this.canvas.x + 1 || c + k >= this.canvas.y + 1 || k <= -1) {
+                    f = false
+                }
+                if (f) {
+                    for (var h = 0; h < e; h++) {
+                        for (var g = 0; g < c; g++) {
+                            if (this.piesaCurenta.get(h, g) != 0 && this.canvas.get((h + l), (g + k)) != 0) {
+                                f = false;
+                                d = true;
+                                break
+                            }
+                        }
+                        if (!f) {
+                            break
+                        }
+                    }
+                }
+                if (d && l == 1) {
+                    clearInterval(this.timer);
+                    this.timer = false;
+                    this.finis = true;
+                    alert("game over!");
+                    document.getElementById("play").innerHTML = "Start!"
+                }
+                return f
+            };
+            this.embedCurenta = function () {
+                var g = this.piesaCurenta.getLatime();
+                var f = this.piesaCurenta.getLungime();
+                for (var d = 0; d < g; d++) {
+                    for (var c = 0; c < f; c++) {
+                        if (this.piesaCurenta.get(d, c) != 0) {
+                            this.canvas.set((d + this.piesaCurentaX), (c + this.piesaCurentaY), this.piesaCurenta.get(d, c));
+                            document.getElementById("cellX" + (d + this.piesaCurentaX) + "Y" + (c + this.piesaCurentaY)).innerHTML = " "
+                        }
+                    }
+                }
+                var e = this.testRand();
+                if (e) {
+                    this.scor += (e * 100)
+                }
+                this.scor++;
+                document.getElementById("scor").innerHTML = this.scor
+            };
+            this.testRand = function () {
+                var g = this.canvas.y - 1;
+                var f = new Array();
+                for (var d = 0; d < this.canvas.x; d++) {
+                    if (this.canvas.get(d, 0) != 0 && this.canvas.get(d, g) != 0) {
+                        var e = true;
+                        for (var c = 0; c < this.canvas.y; c++) {
+                            if (this.canvas.get(d, c) == 0) {
+                                e = false;
+                                break
+                            }
+                        }
+                        if (e == true) {
+                            for (var c = 0; c < this.canvas.y; c++) {
+                                document.getElementById("cellX" + d + "Y" + c).innerHTML = "<b>Y</b>"
+                            }
+                            f.push(d)
+                        }
+                    }
+                }
+                for (var d = 0; d < f.length; d++) {
+                    this.refaCanvasFara(f[d])
+                }
+                this.afisazaTabel();
+                return f.length
+            };
+            this.refaCanvasFara = function (c) {
+                var d = this.canvas.x - 1;
+                for (var f = c; f > 0; f--) {
+                    for (var e = 0; e < this.canvas.y; e++) {
+                        this.canvas.set(f, e, this.canvas.get(f - 1, e))
+                    }
+                }
+            };
+            this.mutaPiesa = function (f) {
+                var d;
+                if (window.event) {
+                    d = window.event.keyCode
+                } else {
+                    if (f) {
+                        d = f.which
+                    }
+                }
+                var c = tetris.piesaCurenta;
+                if (c == null) {
+                    return
+                }
+                switch (d) {
+                    case 38:
+                        c.rotatie();
+                        if (tetris.incearcaPiesaCurenta(0, 0)) {
+                            tetris.afisazaTabel();
+                            tetris.afisazaPiesa()
+                        } else {
+                            c.rotatie();
+                            c.rotatie();
+                            c.rotatie();
+                            tetris.afisazaTabel();
+                            tetris.afisazaPiesa()
+                        }
+                        break;
+                    case 40:
+                        if (tetris.incearcaPiesaCurenta(1, 0)) {
+                            tetris.piesaCurentaX++;
+                            tetris.afisazaTabel();
+                            tetris.afisazaPiesa()
+                        }
+                        break;
+                    case 37:
+                        if (tetris.incearcaPiesaCurenta(0, -1)) {
+                            tetris.piesaCurentaY--;
+                            tetris.afisazaTabel();
+                            tetris.afisazaPiesa()
+                        }
+                        break;
+                    case 39:
+                        if (tetris.incearcaPiesaCurenta(0, +1)) {
+                            tetris.piesaCurentaY++;
+                            tetris.afisazaTabel();
+                            tetris.afisazaPiesa()
+                        }
+                        break
+                }
+                return false
+            };
+            this.pauza = function (c) {
+                if (tetris.timer) {
+                    clearInterval(tetris.timer);
+                    tetris.timer = false;
+                    document.getElementById("scor").innerHTML += " Pause..."
+                } else {
+                    if (c) {
+                        if (tetris.finis == true) {
+                            tetris.reset()
+                        }
+                        tetris.timer = setInterval("tetris.play();", tetris.viteza);
+                        document.getElementById("scor").innerHTML = tetris.scor
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+
+<body>
+<div id="canvas" style="float:left; padding-right:10px;"></div>
+Next:
+<div id="urmatoarea"></div>
+Score:
+<div id="scor">0</div>
+<button onclick="tetris.pauza(true);" id="play">pauza</button>
+<script language="javascript">
+
+
+    var tetris = new clasaTetris(piese, canvas);
+    tetris.reset();
+
+    tetris.timer = setInterval('tetris.play();', tetris.viteza);
+
+    document.onkeydown = tetris.mutaPiesa;
+    if (window.addEventListener) {
+        window.addEventListener('blur', function () {
+            tetris.pauza(false);
+        }, false);
+    } else {
+        window.attachEvent('onblur', function () {
+            tetris.pauza(false)
+        });
+    }
+
+</script>
+</body>
+
+</html>
