@@ -1,0 +1,27 @@
+#canvas {
+    float: left;
+    padding-right: 10px;
+}
+
+#canvas td {
+    width: 20px;
+    height: 20px;
+}
+
+#canvas table {
+    border: 1px solid #000000;
+}
+
+#canvas td .on {
+    background-color: #999999;
+    border: 1px solid #000000;
+}
+
+#canvas td .off {
+    background: none;
+}
+
+#next td {
+    width: 20px;
+    height: 20px;
+}
