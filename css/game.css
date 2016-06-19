@@ -25,3 +25,7 @@
     width: 20px;
     height: 20px;
 }
+
+#paused {
+    display: none;
+}
