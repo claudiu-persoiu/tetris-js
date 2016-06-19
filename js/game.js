@@ -1,3 +1,14 @@
+var generateEmptyMatrix = function (x, y) {
+    var matrix = [], i, j;
+    for (i = 0; i < x; i++) {
+        matrix[i] = [];
+        for (j = 0; j < y; j++) {
+            matrix[i][j] = 0
+        }
+    }
+    return matrix;
+};
+
 var classPiecesCollection = function () {
     var pieces = [];
     this.addFigure = function (c) {
@@ -8,25 +19,15 @@ var classPiecesCollection = function () {
     };
 };
 
-var classPiece = function (a, d, b) {
-    this.arr = c(a, d);
-    this.culoare = b;
-    function c(e, k) {
-        var h = new Array(e);
-        for (var g = 0; g < e; g++) {
-            h[g] = new Array(k);
-            for (var f = 0; f < k; f++) {
-                h[g][f] = 0
-            }
-        }
-        return h
-    }
+var classPiece = function (width, height, color) {
+    this.arr = generateEmptyMatrix(width, height);
+    this.color = color;
 
-    this.set = function (e, f) {
-        this.arr[e][f] = this.culoare
+    this.set = function (x, y) {
+        this.arr[x][y] = this.color
     };
-    this.get = function (e, f) {
-        return this.arr[e][f]
+    this.get = function (x, y) {
+        return this.arr[x][y]
     };
     this.rotation = function () {
         var k = this.arr.length;
@@ -116,13 +117,7 @@ var classCanvas = function (x, y) {
     var matrix = [];
 
     var generateEmptyCanvas = function () {
-        var i, j;
-        for (i = 0; i < x; i++) {
-            matrix[i] = [];
-            for (j = 0; j < y; j++) {
-                matrix[i][j] = 0
-            }
-        }
+        matrix = generateEmptyMatrix(x, y);
     };
 
     generateEmptyCanvas();
@@ -151,7 +146,7 @@ var classTetris = function (piecesCollection, canvas) {
         this.piesaCurentaY = 0;
         this.scor = 0;
         document.getElementById("score-board").innerHTML = this.scor;
-        this.viteza = 1000;
+        this.speed = 1000;
         this.timer = false;
         this.finis = false;
         this.canvas.reset();
@@ -374,7 +369,7 @@ var classTetris = function (piecesCollection, canvas) {
                 if (tetris.finis == true) {
                     tetris.reset()
                 }
-                tetris.timer = setInterval("tetris.play();", tetris.viteza);
+                tetris.timer = setInterval("tetris.play();", tetris.speed);
                 document.getElementById("score-board").innerHTML = tetris.scor;
             }
         }
@@ -386,7 +381,7 @@ tetris.reset();
 
 tetris.timer = setInterval(function () {
     tetris.play();
-}, tetris.viteza);
+}, tetris.speed);
 
 document.onkeydown = tetris.movePiece;
 // 398
