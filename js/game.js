@@ -1,16 +1,13 @@
 var classPiecesCollection = function () {
-    var a = [];
+    var pieces = [];
     this.addFigure = function (c) {
-        a.push(c);
+        pieces.push(c);
     };
     this.getRand = function () {
-        var b = Math.round(Math.random() * (a.length - 1));
-        return a[b]
-    }
+        return pieces[Math.round(Math.random() * (pieces.length - 1))];
+    };
 };
-classPiecesCollection.prototype.length = function () {
-    return arr.length;
-};
+
 var classPiece = function (a, d, b) {
     this.arr = c(a, d);
     this.culoare = b;
@@ -67,8 +64,8 @@ var classPiece = function (a, d, b) {
         return this.arr.length
     };
     this.getHeight = function () {
-        return this.arr[0].length
-    }
+        return this.arr[0].length;
+    };
 };
 var piecesCollection = new classPiecesCollection();
 var tempPiece = new classPiece(2, 3, "#FF0000");
@@ -116,28 +113,26 @@ piecesCollection.addFigure(tempPiece);
 var classCanvas = function (x, y) {
     this.x = x;
     this.y = y;
+    var matrix = [];
 
     var generateEmptyCanvas = function () {
-
-        var matrix = [], i, j;
+        var i, j;
         for (i = 0; i < x; i++) {
             matrix[i] = [];
             for (j = 0; j < y; j++) {
                 matrix[i][j] = 0
             }
         }
-
-        this.arr = matrix;
     };
 
     generateEmptyCanvas();
 
     this.get = function (x, y) {
-        return this.arr[x][y];
+        return matrix[x][y];
     };
 
     this.set = function (x, y, color) {
-        this.arr[x][y] = color;
+        matrix[x][y] = color;
     };
 
     this.reset = function () {
@@ -157,7 +152,7 @@ var classTetris = function (piecesCollection, canvas) {
         this.scor = 0;
         document.getElementById("score-board").innerHTML = this.scor;
         this.viteza = 1000;
-        this.timer;
+        this.timer = false;
         this.finis = false;
         this.canvas.reset();
         var playButton = document.getElementById("play");
@@ -168,28 +163,28 @@ var classTetris = function (piecesCollection, canvas) {
 
     };
     this.displayTable = function () {
-        var h = document.createElement("table");
-        var e = document.createElement("tbody");
-        h.appendChild(e);
-        var g = document.createDocumentFragment();
-        for (var f = 0; f < this.canvas.x; f++) {
-            var k = document.createElement("tr");
-            e.appendChild(k);
-            for (var d = 0; d < this.canvas.y; d++) {
-                var l = document.createElement("td");
-                l.setAttribute("id", "cellX" + f + "Y" + d);
-                k.appendChild(l);
-                var c = document.createTextNode(" ");
-                l.appendChild(c);
-                if (this.canvas.get(f, d) == 0) {
-                    l.bgColor = ""
+        var table = document.createElement("table");
+        var tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+
+        for (var x = 0; x < this.canvas.x; x++) {
+            var tr = document.createElement("tr");
+            tbody.appendChild(tr);
+            for (var y = 0; y < this.canvas.y; y++) {
+                var td = document.createElement("td");
+                td.setAttribute("id", "cellX" + x + "Y" + y);
+                tr.appendChild(td);
+                td.appendChild(document.createTextNode(" "));
+
+                if (this.canvas.get(x, y) == 0) {
+                    td.bgColor = ""
                 } else {
-                    l.bgColor = this.canvas.get(f, d)
+                    td.bgColor = this.canvas.get(x, y)
                 }
             }
         }
         this.afisare.innerHTML = "";
-        this.afisare.appendChild(h)
+        this.afisare.appendChild(table)
     };
     this.play = function () {
         tetris.displayTable();
@@ -220,14 +215,14 @@ var classTetris = function (piecesCollection, canvas) {
         this.piesaCurentaY = f - c
     };
     this.displayPiece = function () {
-        var c = this.piesaCurentaX;
-        var h = this.piesaCurentaY;
-        var g = this.pieceCurrent.getWidth();
-        var f = this.pieceCurrent.getHeight();
-        for (var e = 0; e < g; e++) {
-            for (var d = 0; d < f; d++) {
-                if (this.pieceCurrent.get(e, d) != 0) {
-                    document.getElementById("cellX" + (e + c) + "Y" + (d + h)).bgColor = this.pieceCurrent.get(e, d)
+        var currentX = this.piesaCurentaX;
+        var currentY = this.piesaCurentaY;
+        var currentWidth = this.pieceCurrent.getWidth();
+        var currentHeight = this.pieceCurrent.getHeight();
+        for (var x = 0; x < currentWidth; x++) {
+            for (var y = 0; y < currentHeight; y++) {
+                if (this.pieceCurrent.get(x, y) != 0) {
+                    document.getElementById("cellX" + (x + currentX) + "Y" + (y + currentY)).bgColor = this.pieceCurrent.get(x, y)
                 }
             }
         }
@@ -286,78 +281,75 @@ var classTetris = function (piecesCollection, canvas) {
     this.testRand = function () {
         var g = this.canvas.y - 1;
         var f = new Array();
-        for (var d = 0; d < this.canvas.x; d++) {
-            if (this.canvas.get(d, 0) != 0 && this.canvas.get(d, g) != 0) {
+        var i, j;
+        for (i = 0; i < this.canvas.x; i++) {
+            if (this.canvas.get(i, 0) != 0 && this.canvas.get(i, g) != 0) {
                 var e = true;
-                for (var c = 0; c < this.canvas.y; c++) {
-                    if (this.canvas.get(d, c) == 0) {
+                for (j = 0; j < this.canvas.y; j++) {
+                    if (this.canvas.get(i, j) == 0) {
                         e = false;
                         break
                     }
                 }
                 if (e == true) {
-                    for (var c = 0; c < this.canvas.y; c++) {
-                        document.getElementById("cellX" + d + "Y" + c).innerHTML = "<b>Y</b>"
+                    for (j = 0; j < this.canvas.y; j++) {
+                        document.getElementById("cellX" + i + "Y" + j).innerHTML = "<b>Y</b>"
                     }
-                    f.push(d)
+                    f.push(i)
                 }
             }
         }
-        for (var d = 0; d < f.length; d++) {
-            this.redoCanvasWithout(f[d])
+        for (i = 0; i < f.length; i++) {
+            this.redoCanvasWithout(f[i])
         }
         this.displayTable();
-        return f.length
+        return f.length;
     };
     this.redoCanvasWithout = function (c) {
-        var d = this.canvas.x - 1;
         for (var f = c; f > 0; f--) {
             for (var e = 0; e < this.canvas.y; e++) {
                 this.canvas.set(f, e, this.canvas.get(f - 1, e))
             }
         }
     };
-    this.movePiece = function (f) {
-        var keyCode;
-        if (window.event) {
-            keyCode = window.event.keyCode
-        } else {
-            if (f) {
-                keyCode = f.which
-            }
-        }
+    this.movePiece = function (event) {
+        var keyCode = event.which || window.event.keyCode;
+
         var currentPiece = tetris.pieceCurrent;
         if (currentPiece == null) {
-            return
+            return;
         }
 
         var changed = false;
 
+        var KEY_UP = 38,
+            KEY_DOWN = 40,
+            KEY_LEFT = 37,
+            KEY_RIGHT = 39;
+
         switch (keyCode) {
-            case 38:
+            case KEY_UP:
                 currentPiece.rotation();
-                if (tetris.loadCurrentPiece(0, 0)) {
-                    changed = true;
-                } else {
+                if (!tetris.loadCurrentPiece(0, 0)) {
                     currentPiece.rotation();
                     currentPiece.rotation();
                     currentPiece.rotation();
-                    changed = true;
                 }
+                changed = true;
                 break;
-            case 40:
+            case KEY_DOWN:
                 if (tetris.loadCurrentPiece(1, 0)) {
                     tetris.piesaCurentaX++;
                     changed = true;
                 }
                 break;
-            case 37:
+            case KEY_LEFT:
                 if (tetris.loadCurrentPiece(0, -1)) {
                     tetris.piesaCurentaY--;
                     changed = true;
                 }
                 break;
-            case 39:
+            case KEY_RIGHT:
                 if (tetris.loadCurrentPiece(0, +1)) {
                     tetris.piesaCurentaY++;
                     changed = true;
@@ -370,7 +362,7 @@ var classTetris = function (piecesCollection, canvas) {
             tetris.displayPiece();
         }
 
-        return false
+        return false;
     };
     this.pause = function (c) {
         if (tetris.timer) {
@@ -386,7 +378,7 @@ var classTetris = function (piecesCollection, canvas) {
                 document.getElementById("score-board").innerHTML = tetris.scor;
             }
         }
-    }
+    };
 };
 
 var tetris = new classTetris(piecesCollection, canvas);
