@@ -46,9 +46,7 @@ var classPiece = function (width, height, color, elements) {
         return this.arr[x][y]
     };
     this.rotation = function () {
-        var width = this.arr.length,
-            height = this.arr[0].length,
-            rotated = [],
+        var rotated = [],
             i, j;
 
         for (i = 0; i < height; i++) {
@@ -62,38 +60,43 @@ var classPiece = function (width, height, color, elements) {
         this.arr = rotated;
     };
     this.preview = function () {
-        var k = this.arr.length;
-        var h = this.arr[0].length;
-        var g = "<table>";
-        for (var f = 0; f < k; f++) {
-            g += "<tr>";
-            for (var e = 0; e < h; e++) {
-                g += '<td  bgcolor="';
-                if (this.arr[f][e] != 0) {
-                    g += this.arr[f][e]
+        var tr, td, i, j;
+        var table = document.createElement("table");
+        var tbody = document.createElement("tbody");
+        table.appendChild(tbody);
+
+        for (i = 0; i < width; i++) {
+            tr = document.createElement("tr");
+            tbody.appendChild(tr);
+
+            for (j = 0; j < height; j++) {
+                td = document.createElement("td");
+                td.appendChild(document.createTextNode(" "));
+                if (this.arr[i][j] != 0) {
+                    td.bgColor = this.arr[i][j];
                 }
-                g += '">&nbsp;</td>'
+                tr.appendChild(td);
             }
-            g += "</tr>"
         }
-        g += "</table>";
-        return g
+        var nextContainer = document.getElementById("next");
+        nextContainer.innerHTML = '';
+        nextContainer.appendChild(table);
     };
     this.getWidth = function () {
-        return this.arr.length
+        return width;
     };
     this.getHeight = function () {
-        return this.arr[0].length;
+        return height;
     };
 };
 var piecesCollection = new classPiecesCollection();
-piecesCollection.addPiece(new classPiece(2, 3, "#FF0000", [[0, 0], [0, 1], [1, 1], [1, 2]]))
-    .addPiece(new classPiece(1, 4, "#00FF00", [[0, 0], [0, 1], [0, 2], [0, 3]]))
-    .addPiece(new classPiece(2, 3, "#2984D7", [[0, 1], [1, 0], [1, 1], [0, 2]]))
-    .addPiece(new classPiece(2, 3, "#CCCCCC", [[0, 1], [1, 0], [1, 1], [1, 2]]))
-    .addPiece(new classPiece(2, 2, "#DE397B", [[0, 0], [0, 1], [1, 0], [1, 1]]))
-    .addPiece(new classPiece(2, 3, "#259463", [[0, 0], [0, 1], [0, 2], [1, 2]]))
-    .addPiece(new classPiece(2, 3, "#BD6B31", [[1, 0], [1, 1], [1, 2], [0, 2]]));
+piecesCollection.addPiece(new classPiece(3, 3, "#FF0000", [[0, 0], [0, 1], [1, 1], [1, 2]]))
+    .addPiece(new classPiece(4, 4, "#00FF00", [[1, 0], [1, 1], [1, 2], [1, 3]]))
+    .addPiece(new classPiece(3, 3, "#2984D7", [[1, 1], [2, 0], [2, 1], [1, 2]]))
+    .addPiece(new classPiece(3, 3, "#CCCCCC", [[1, 1], [2, 0], [2, 1], [2, 2]]))
+    .addPiece(new classPiece(4, 4, "#DE397B", [[1, 1], [1, 2], [2, 1], [2, 2]]))
+    .addPiece(new classPiece(3, 3, "#259463", [[1, 0], [1, 1], [1, 2], [2, 2]]))
+    .addPiece(new classPiece(3, 3, "#BD6B31", [[2, 0], [2, 1], [2, 2], [1, 2]]));
 
 var classCanvas = function (height, width) {
     var matrix = [];
@@ -142,8 +145,8 @@ var classTetris = function (piecesCollection, canvas) {
         playButton.onclick = function () {
             tetris.pause(true);
         }
-
     };
+
     this.displayTable = function () {
         var table = document.createElement("table");
         var tbody = document.createElement("tbody");
@@ -166,8 +169,16 @@ var classTetris = function (piecesCollection, canvas) {
             }
         }
         this.afisare.innerHTML = "";
-        this.afisare.appendChild(table)
+        this.afisare.appendChild(table);
     };
+
+    this.testGameOver = function () {
+        if(this.pieceCurrentX < 0) {
+            this.endGame();
+            return true;
+        }
+    };
+
     this.play = function () {
         tetris.displayTable();
         if (tetris.pieceCurrent == null) {
@@ -176,7 +187,7 @@ var classTetris = function (piecesCollection, canvas) {
         tetris.displayPiece();
         if (tetris.loadCurrentPiece(1, 0)) {
             tetris.pieceCurrentX++
-        } else {
+        } else if(!tetris.testGameOver()) {
             tetris.embedCurrentPiece();
             tetris.pieceCurrent = null;
             tetris.pieceCurrentX = 0;
@@ -188,6 +199,20 @@ var classTetris = function (piecesCollection, canvas) {
         return Math.ceil((this.canvas.getWidth() / 2) - (this.pieceCurrent.getHeight() / 2));
     };
 
+    this.getFirstRowInPiece = function () {
+        var height = this.pieceCurrent.getHeight(),
+            width = this.pieceCurrent.getWidth(),
+            i, j;
+
+        for (i = height - 1; i > 0; i--) {
+            for (j = 0; j < width; j++) {
+                if (this.pieceCurrent.get(i, j) != 0) {
+                    return -i;
+                }
+            }
+        }
+    };
+
     this.getNextPiece = function () {
         if (!this.pieceNext) {
             this.pieceNext = this.piecesCollection.getRand();
@@ -196,8 +221,9 @@ var classTetris = function (piecesCollection, canvas) {
         this.pieceCurrent = this.pieceNext;
         this.pieceNext = this.piecesCollection.getRand();
 
-        document.getElementById("next").innerHTML = this.pieceNext.preview();
-        this.pieceCurrentX = 0;
+        this.pieceNext.preview();
+
+        this.pieceCurrentX = this.getFirstRowInPiece();
         this.pieceCurrentY = this.getWidthCenter();
     };
 
@@ -205,51 +231,51 @@ var classTetris = function (piecesCollection, canvas) {
         var currentWidth = this.pieceCurrent.getWidth();
         var currentHeight = this.pieceCurrent.getHeight();
         var currentX = this.pieceCurrentX;
-        var currentY = this.pieceCurrentY; // - Math.floor(currentHeight / 2);
+        var currentY = this.pieceCurrentY;
 
         for (var x = 0; x < currentWidth; x++) {
             for (var y = 0; y < currentHeight; y++) {
-                if (this.pieceCurrent.get(x, y) != 0) {
-                    document.getElementById("cellX" + (x + currentX) + "Y" + (y + currentY)).bgColor = this.pieceCurrent.get(x, y)
+                if ((currentX + x) >= 0 && this.pieceCurrent.get(x, y) != 0) {
+                    document.getElementById("cellX" + (x + currentX) + "Y" + (y + currentY)).bgColor = this.pieceCurrent.get(x, y);
                 }
             }
         }
     };
+
     this.loadCurrentPiece = function (x, y) {
-        var pieceWidth = this.pieceCurrent.getWidth();
-        var pieceHeight = this.pieceCurrent.getHeight();
-        var positionX = this.pieceCurrentX + x;
-        var positionY = this.pieceCurrentY + y;
+        var pieceWidth = this.pieceCurrent.getWidth(),
+            pieceHeight = this.pieceCurrent.getHeight(),
+            positionX = this.pieceCurrentX + x,
+            positionY = this.pieceCurrentY + y,
+            celPositionX, celPositionY;
 
-        var result = true;
-        var finished = false;
-
-        if (pieceWidth + positionX >= this.canvas.getHeight() + 1 || pieceHeight + positionY >= this.canvas.getWidth() + 1 || positionY <= -1) {
-            result = false
-        }
-        if (result) {
-            for (var i = 0; i < pieceWidth; i++) {
-                for (var j = 0; j < pieceHeight; j++) {
-                    if (this.pieceCurrent.get(i, j) != 0 && this.canvas.get((i + positionX), (j + positionY)) != 0) {
-                        result = false;
-                        finished = true;
-                        break
-                    }
-                }
-                if (!result) {
-                    break
+        for (var i = 0; i < pieceWidth; i++) {
+            for (var j = 0; j < pieceHeight; j++) {
+                celPositionX = i + positionX;
+                celPositionY = j + positionY;
+                if (this.pieceCurrent.get(i, j) != 0 && (
+                        celPositionY < 0 ||
+                        celPositionY > this.canvas.getWidth() ||
+                        celPositionX >= this.canvas.getHeight() ||
+                        (celPositionX >= 0 && this.canvas.get(celPositionX, celPositionY) != 0)
+                    )
+                ) {
+                    return false;
                 }
             }
         }
-        if (finished && positionX == 1) {
-            clearInterval(this.timer);
-            this.timer = false;
-            this.finished = true;
-            alert("game over!");
-            document.getElementById("play").innerHTML = "Start!"
-        }
-        return result;
+
+        return true;
     };
+
+    this.endGame = function () {
+        clearInterval(this.timer);
+        this.timer = false;
+        this.finished = true;
+        alert("game over!");
+        document.getElementById("play").innerHTML = "Start!";
+    };
+
     this.embedCurrentPiece = function () {
         var width = this.pieceCurrent.getWidth();
         var height = this.pieceCurrent.getHeight();
@@ -272,16 +298,16 @@ var classTetris = function (piecesCollection, canvas) {
         var rowsToEliminate = [];
         var i, j;
         for (i = 0; i < this.canvas.getHeight(); i++) {
-                var fullRow = true;
-                for (j = 0; j < this.canvas.getWidth(); j++) {
-                    if (this.canvas.get(i, j) == 0) {
-                        fullRow = false;
-                        break
-                    }
+            var fullRow = true;
+            for (j = 0; j < this.canvas.getWidth(); j++) {
+                if (this.canvas.get(i, j) == 0) {
+                    fullRow = false;
+                    break
                 }
-                if (fullRow == true) {
-                    rowsToEliminate.push(i)
-                }
+            }
+            if (fullRow == true) {
+                rowsToEliminate.push(i)
+            }
 
         }
         for (i = 0; i < rowsToEliminate.length; i++) {
@@ -315,13 +341,10 @@ var classTetris = function (piecesCollection, canvas) {
         switch (keyCode) {
             case KEY_UP:
                 currentPiece.rotation();
-                var currentY = tetris.pieceCurrentY;
-                tetris.pieceCurrentY -= Math.floor(currentPiece.getHeight() / 2) - 1;
                 if (!tetris.loadCurrentPiece(0, 0)) {
                     currentPiece.rotation();
                     currentPiece.rotation();
                     currentPiece.rotation();
-                    tetris.pieceCurrentY = currentY;
                 } else {
                     changed = true;
                 }
