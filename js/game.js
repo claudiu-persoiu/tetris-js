@@ -9,6 +9,29 @@ var generateEmptyMatrix = function (x, y) {
     return matrix;
 };
 
+var buildDOMTable = function (canvas) {
+
+    var table = document.createElement("table"),
+        tbody = document.createElement("tbody"),
+        tr, td, color, i, j;
+    table.appendChild(tbody);
+
+    for (i = 0; i < canvas.getHeight(); i++) {
+        tr = document.createElement("tr");
+        tbody.appendChild(tr);
+        for (j = 0; j < canvas.getWidth(); j++) {
+            td = document.createElement("td");
+            tr.appendChild(td);
+            td.appendChild(document.createTextNode(" "));
+            color = canvas.get(i, j);
+            td.bgColor = color != 0 ? color : '';
+        }
+    }
+
+    return table;
+};
+
+
 var classPiecesCollection = function () {
     var pieces = [];
     
@@ -49,38 +72,20 @@ var classPiece = function (width, height, color, elements) {
         var rotated = [],
             i, j;
 
-        for (i = 0; i < height; i++) {
-            rotated[i] = [];
-        }
         for (i = 0; i < width; i++) {
+            rotated[i] = [];
             for (j = 0; j < height; j++) {
-                rotated[j][(width - 1 - i)] = this.arr[i][j]
+                rotated[i][j] = this.arr[width - j - 1][i];
             }
         }
+
         this.arr = rotated;
     };
     this.preview = function () {
-        var tr, td, i, j;
-        var table = document.createElement("table");
-        var tbody = document.createElement("tbody");
-        table.appendChild(tbody);
 
-        for (i = 0; i < width; i++) {
-            tr = document.createElement("tr");
-            tbody.appendChild(tr);
-
-            for (j = 0; j < height; j++) {
-                td = document.createElement("td");
-                td.appendChild(document.createTextNode(" "));
-                if (this.arr[i][j] != 0) {
-                    td.bgColor = this.arr[i][j];
-                }
-                tr.appendChild(td);
-            }
-        }
         var nextContainer = document.getElementById("next");
         nextContainer.innerHTML = '';
-        nextContainer.appendChild(table);
+        nextContainer.appendChild(buildDOMTable(this));
     };
     this.getWidth = function () {
         return width;
@@ -107,12 +112,32 @@ var classCanvas = function (height, width) {
 
     generateEmptyCanvas();
 
+    var displayPiece = function (piece, x, y) {
+        var currentWidth = piece.getWidth(),
+            currentHeight = piece.getHeight(),
+            tempCanvas = new classCanvas(height, width);
+        tempCanvas.setMatrix(matrix);
+
+        for (var i = 0; i < currentWidth; i++) {
+            for (var j = 0; j < currentHeight; j++) {
+                if ((x + i) >= 0 && piece.get(i, j) != 0) {
+                    tempCanvas.set((i + x), (j + y), piece.get(i, j));
+                }
+            }
+        }
+
+        return tempCanvas;
+    };
+
     return {
         get: function (x, y) {
             return matrix[x][y];
         },
         set: function (x, y, color) {
             matrix[x][y] = color;
+        },
+        setMatrix: function (newMatrix) {
+            matrix = JSON.parse(JSON.stringify(newMatrix));
         },
         reset: function () {
             generateEmptyCanvas();
@@ -122,6 +147,9 @@ var classCanvas = function (height, width) {
         },
         getHeight: function () {
             return height;
+        },
+        displayPiece: function (piece, x, y) {
+            return displayPiece(piece, x, y);
         }
     };
 };
@@ -148,28 +176,11 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.displayTable = function () {
-        var table = document.createElement("table");
-        var tbody = document.createElement("tbody");
-        table.appendChild(tbody);
 
-        for (var x = 0; x < this.canvas.getHeight(); x++) {
-            var tr = document.createElement("tr");
-            tbody.appendChild(tr);
-            for (var y = 0; y < this.canvas.getWidth(); y++) {
-                var td = document.createElement("td");
-                td.setAttribute("id", "cellX" + x + "Y" + y);
-                tr.appendChild(td);
-                td.appendChild(document.createTextNode(" "));
-
-                if (this.canvas.get(x, y) == 0) {
-                    td.bgColor = ""
-                } else {
-                    td.bgColor = this.canvas.get(x, y)
-                }
-            }
-        }
         this.afisare.innerHTML = "";
-        this.afisare.appendChild(table);
+        this.afisare.appendChild(
+            buildDOMTable(this.canvas.displayPiece(this.pieceCurrent, this.pieceCurrentX, this.pieceCurrentY))
+        );
     };
 
     this.testGameOver = function () {
@@ -180,11 +191,12 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.play = function () {
-        tetris.displayTable();
         if (tetris.pieceCurrent == null) {
             tetris.getNextPiece()
         }
-        tetris.displayPiece();
+
+        tetris.displayTable();
+
         if (tetris.loadCurrentPiece(1, 0)) {
             tetris.pieceCurrentX++
         } else if(!tetris.testGameOver()) {
@@ -245,14 +257,12 @@ var classTetris = function (piecesCollection, canvas) {
     this.loadCurrentPiece = function (x, y) {
         var pieceWidth = this.pieceCurrent.getWidth(),
             pieceHeight = this.pieceCurrent.getHeight(),
-            positionX = this.pieceCurrentX + x,
-            positionY = this.pieceCurrentY + y,
             celPositionX, celPositionY;
 
         for (var i = 0; i < pieceWidth; i++) {
             for (var j = 0; j < pieceHeight; j++) {
-                celPositionX = i + positionX;
-                celPositionY = j + positionY;
+                celPositionX = i + this.pieceCurrentX + x;
+                celPositionY = j + this.pieceCurrentY + y;
                 if (this.pieceCurrent.get(i, j) != 0 && (
                         celPositionY < 0 ||
                         celPositionY > this.canvas.getWidth() ||
@@ -283,7 +293,6 @@ var classTetris = function (piecesCollection, canvas) {
             for (var j = 0; j < height; j++) {
                 if (this.pieceCurrent.get(i, j) != 0) {
                     this.canvas.set((i + this.pieceCurrentX), (j + this.pieceCurrentY), this.pieceCurrent.get(i, j));
-                    document.getElementById("cellX" + (i + this.pieceCurrentX) + "Y" + (j + this.pieceCurrentY)).innerHTML = " "
                 }
             }
         }
@@ -294,6 +303,7 @@ var classTetris = function (piecesCollection, canvas) {
         this.score++;
         document.getElementById("score-board").innerHTML = this.score
     };
+
     this.testRow = function () {
         var rowsToEliminate = [];
         var i, j;
@@ -311,15 +321,15 @@ var classTetris = function (piecesCollection, canvas) {
 
         }
         for (i = 0; i < rowsToEliminate.length; i++) {
-            this.redoCanvasWithout(rowsToEliminate[i])
+            this.eliminateRows(rowsToEliminate[i])
         }
-        this.displayTable();
         return rowsToEliminate.length;
     };
-    this.redoCanvasWithout = function (c) {
-        for (var f = c; f > 0; f--) {
-            for (var e = 0; e < this.canvas.getWidth(); e++) {
-                this.canvas.set(f, e, this.canvas.get(f - 1, e))
+    this.eliminateRows = function (rows) {
+        var i, j;
+        for (i = rows; i > 0; i--) {
+            for (j = 0; j < this.canvas.getWidth(); j++) {
+                this.canvas.set(i, j, this.canvas.get(i - 1, j))
             }
         }
     };
@@ -372,7 +382,6 @@ var classTetris = function (piecesCollection, canvas) {
 
         if (changed) {
             tetris.displayTable();
-            tetris.displayPiece();
         }
 
         return false;
