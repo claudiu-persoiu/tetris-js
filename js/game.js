@@ -54,11 +54,10 @@ var classPiecesCollection = function () {
 };
 
 var classPiece = function (width, height, color, elements) {
-    this.arr = generateEmptyMatrix(width, height);
-    this.color = color;
+    var matrix = generateEmptyMatrix(width, height);
 
     this.set = function (x, y) {
-        this.arr[x][y] = this.color
+        matrix[x][y] = color
     };
 
     for (var index in elements) {
@@ -66,7 +65,7 @@ var classPiece = function (width, height, color, elements) {
     }
 
     this.get = function (x, y) {
-        return this.arr[x][y]
+        return matrix[x][y]
     };
     this.rotation = function () {
         var rotated = [],
@@ -75,14 +74,12 @@ var classPiece = function (width, height, color, elements) {
         for (i = 0; i < width; i++) {
             rotated[i] = [];
             for (j = 0; j < height; j++) {
-                rotated[i][j] = this.arr[width - j - 1][i];
+                rotated[i][j] = matrix[width - j - 1][i];
             }
         }
-
-        this.arr = rotated;
+        matrix = rotated;
     };
     this.preview = function () {
-
         var nextContainer = document.getElementById("next");
         nextContainer.innerHTML = '';
         nextContainer.appendChild(buildDOMTable(this));
