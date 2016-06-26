@@ -167,9 +167,9 @@ var classTetris = function (piecesCollection, canvas) {
         this.canvas.reset();
         var playButton = document.getElementById("play");
         playButton.innerHTML = "Pause";
-        playButton.onclick = function () {
+        playButton.addEventListener('click', function () {
             tetris.pause(true);
-        }
+        }, false);
     };
 
     this.displayTable = function () {
@@ -330,59 +330,7 @@ var classTetris = function (piecesCollection, canvas) {
             }
         }
     };
-    this.movePiece = function (event) {
-        var keyCode = event.which || window.event.keyCode;
 
-        var currentPiece = tetris.pieceCurrent;
-        if (currentPiece == null) {
-            return;
-        }
-
-        var changed = false;
-
-        var KEY_UP = 38,
-            KEY_DOWN = 40,
-            KEY_LEFT = 37,
-            KEY_RIGHT = 39;
-
-        switch (keyCode) {
-            case KEY_UP:
-                currentPiece.rotation();
-                if (!tetris.loadCurrentPiece(0, 0)) {
-                    currentPiece.rotation();
-                    currentPiece.rotation();
-                    currentPiece.rotation();
-                } else {
-                    changed = true;
-                }
-
-                break;
-            case KEY_DOWN:
-                if (tetris.loadCurrentPiece(1, 0)) {
-                    tetris.pieceCurrentX++;
-                    changed = true;
-                }
-                break;
-            case KEY_LEFT:
-                if (tetris.loadCurrentPiece(0, -1)) {
-                    tetris.pieceCurrentY--;
-                    changed = true;
-                }
-                break;
-            case KEY_RIGHT:
-                if (tetris.loadCurrentPiece(0, +1)) {
-                    tetris.pieceCurrentY++;
-                    changed = true;
-                }
-                break
-        }
-
-        if (changed) {
-            tetris.displayTable();
-        }
-
-        return false;
-    };
     this.pause = function (play) {
         if (tetris.timer) {
             clearInterval(tetris.timer);
@@ -398,11 +346,124 @@ var classTetris = function (piecesCollection, canvas) {
 
         document.getElementById("paused").style.display = tetris.timer ? 'none' : 'block';
     };
+
+    this.actionRotate = function () {
+        this.pieceCurrent.rotation();
+        if (!tetris.loadCurrentPiece(0, 0)) {
+            this.pieceCurrent.rotation();
+            this.pieceCurrent.rotation();
+            this.pieceCurrent.rotation();
+        }
+    };
+
+    this.actionDown = function () {
+        if (this.loadCurrentPiece(1, 0)) {
+            this.pieceCurrentX++;
+        }
+    };
+
+    this.actionLeft = function () {
+        if (this.loadCurrentPiece(0, -1)) {
+            this.pieceCurrentY--;
+        }
+    };
+
+    this.actionRight = function () {
+        if (this.loadCurrentPiece(0, +1)) {
+            this.pieceCurrentY++;
+        }
+    };
+
+    this.movePiece = function (event) {
+        if (tetris.pieceCurrent == null || !tetris.timer) {
+            return false;
+        }
+
+        var KEY_UP = 38,
+            KEY_DOWN = 40,
+            KEY_LEFT = 37,
+            KEY_RIGHT = 39;
+
+        var keyCode = event.which || window.event.keyCode;
+
+        switch (keyCode) {
+            case KEY_UP:
+                tetris.actionRotate();
+                break;
+            case KEY_DOWN:
+                tetris.actionDown();
+                break;
+            case KEY_LEFT:
+                tetris.actionLeft();
+                break;
+            case KEY_RIGHT:
+                tetris.actionRight();
+                break;
+            default:
+                return false;
+        }
+
+        tetris.displayTable();
+        return true;
+    };
 };
 
 var tetris = new classTetris(piecesCollection, canvas);
 tetris.reset();
 tetris.pause(true);
 
-document.onkeydown = tetris.movePiece;
+document.addEventListener('keydown', function (event) {
+    var moved = tetris.movePiece(event);
+    if (moved) {
+        event.preventDefault();
+    }
+}, false);
+//
+// var touchHandler = function (element) {
+//
+//     var startX, startY, posX, posY, direction;
+//
+//     var touchStart = function (event) {
+//         var object = event.changedTouches[0];
+//         startX = parseInt(object.clientX);
+//         startY = parseInt(object.clientY);
+//         console.log('aaaaa', startX, startY);
+//     };
+//
+//     var touchMove = function (event) {
+//         var object = event.changedTouches[0];
+//         posX = parseInt(object.clientX);
+//         posY = parseInt(object.clientY);
+//
+//         direction = calculateDirection(posX, posY);
+//
+//         console.log(direction);
+//
+//         event.preventDefault();
+//         console.log('bbbbb', posX, posY);
+//     };
+//
+//     var touchEnd = function (event) {
+//         console.log('ccccc');
+//     };
+//
+//     element.addEventListener('touchstart', touchStart, false);
+//     element.addEventListener('touchmove', touchMove, false);
+//     element.addEventListener('touchend', touchEnd, false);
+//
+//     var calculateDirection = function (posX, posY) {
+//
+//         var diffX = posX - startX,
+//             diffY = posY - startY;
+//
+//         if (Math.abs(diffX) > Math.abs(diffY)) {
+//             return (diffX > 0) ? 'right' : 'left';
+//         } else {
+//             return (diffY > 0) ? 'down' : 'up';
+//         }
+//     };
+//
+// };
+//
+// touchHandler(document.getElementById("canvas"));
 // 398
