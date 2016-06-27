@@ -34,7 +34,7 @@ var buildDOMTable = function (canvas) {
 
 var classPiecesCollection = function () {
     var pieces = [];
-    
+
     this.addPiece = function (c) {
         pieces.push(c);
         return this;
@@ -82,7 +82,7 @@ var classPiece = function (width, height, color, elements) {
     this.preview = function () {
         var nextContainer = document.getElementById("next");
         nextContainer.innerHTML = '';
-        nextContainer.appendChild(buildDOMTable(this));
+        nextContainer.appendChild(buildDOMTable(new classPiece(4, 4, color, elements)));
     };
     this.getWidth = function () {
         return width;
@@ -156,7 +156,9 @@ var canvas = new classCanvas(20, 15);
 var classTetris = function (piecesCollection, canvas) {
     this.piecesCollection = piecesCollection;
     this.canvas = canvas;
-    this.afisare = document.getElementById("canvas");
+    this.canvasElement = document.getElementById("canvas");
+    this.elementSize = this.canvasElement.offsetWidth / this.canvas.getWidth();
+
     this.reset = function () {
         this.pieceCurrent = null;
         this.score = 0;
@@ -174,14 +176,14 @@ var classTetris = function (piecesCollection, canvas) {
 
     this.displayTable = function () {
 
-        this.afisare.innerHTML = "";
-        this.afisare.appendChild(
+        this.canvasElement.innerHTML = "";
+        this.canvasElement.appendChild(
             buildDOMTable(this.canvas.displayPiece(this.pieceCurrent, this.pieceCurrentX, this.pieceCurrentY))
         );
     };
 
     this.testGameOver = function () {
-        if(this.pieceCurrentX < 0) {
+        if (this.pieceCurrentX < 0) {
             this.endGame();
             return true;
         }
@@ -196,7 +198,7 @@ var classTetris = function (piecesCollection, canvas) {
 
         if (tetris.loadCurrentPiece(1, 0)) {
             tetris.pieceCurrentX++
-        } else if(!tetris.testGameOver()) {
+        } else if (!tetris.testGameOver()) {
             tetris.embedCurrentPiece();
             tetris.pieceCurrent = null;
             tetris.pieceCurrentX = 0;
@@ -356,21 +358,33 @@ var classTetris = function (piecesCollection, canvas) {
         }
     };
 
-    this.actionDown = function () {
-        if (this.loadCurrentPiece(1, 0)) {
-            this.pieceCurrentX++;
+    this.actionDown = function (nrOfElements) {
+        for (var i = 0; i < nrOfElements; i++) {
+            if (this.loadCurrentPiece(1, 0)) {
+                this.pieceCurrentX++;
+            } else {
+                break;
+            }
         }
     };
 
-    this.actionLeft = function () {
-        if (this.loadCurrentPiece(0, -1)) {
-            this.pieceCurrentY--;
+    this.actionLeft = function (nrOfElements) {
+        for (var i = 0; i < nrOfElements; i++) {
+            if (this.loadCurrentPiece(0, -1)) {
+                this.pieceCurrentY--;
+            } else {
+                break;
+            }
         }
     };
 
-    this.actionRight = function () {
-        if (this.loadCurrentPiece(0, +1)) {
-            this.pieceCurrentY++;
+    this.actionRight = function (nrOfElements) {
+        for (var i = 0; i < nrOfElements; i++) {
+            if (this.loadCurrentPiece(0, +1)) {
+                this.pieceCurrentY++;
+            } else {
+                break;
+            }
         }
     };
 
@@ -391,13 +405,13 @@ var classTetris = function (piecesCollection, canvas) {
                 tetris.actionRotate();
                 break;
             case KEY_DOWN:
-                tetris.actionDown();
+                tetris.actionDown(1);
                 break;
             case KEY_LEFT:
-                tetris.actionLeft();
+                tetris.actionLeft(1);
                 break;
             case KEY_RIGHT:
-                tetris.actionRight();
+                tetris.actionRight(1);
                 break;
             default:
                 return false;
@@ -418,52 +432,72 @@ document.addEventListener('keydown', function (event) {
         event.preventDefault();
     }
 }, false);
-//
-// var touchHandler = function (element) {
-//
-//     var startX, startY, posX, posY, direction;
-//
-//     var touchStart = function (event) {
-//         var object = event.changedTouches[0];
-//         startX = parseInt(object.clientX);
-//         startY = parseInt(object.clientY);
-//         console.log('aaaaa', startX, startY);
-//     };
-//
-//     var touchMove = function (event) {
-//         var object = event.changedTouches[0];
-//         posX = parseInt(object.clientX);
-//         posY = parseInt(object.clientY);
-//
-//         direction = calculateDirection(posX, posY);
-//
-//         console.log(direction);
-//
-//         event.preventDefault();
-//         console.log('bbbbb', posX, posY);
-//     };
-//
-//     var touchEnd = function (event) {
-//         console.log('ccccc');
-//     };
-//
-//     element.addEventListener('touchstart', touchStart, false);
-//     element.addEventListener('touchmove', touchMove, false);
-//     element.addEventListener('touchend', touchEnd, false);
-//
-//     var calculateDirection = function (posX, posY) {
-//
-//         var diffX = posX - startX,
-//             diffY = posY - startY;
-//
-//         if (Math.abs(diffX) > Math.abs(diffY)) {
-//             return (diffX > 0) ? 'right' : 'left';
-//         } else {
-//             return (diffY > 0) ? 'down' : 'up';
-//         }
-//     };
-//
-// };
-//
-// touchHandler(document.getElementById("canvas"));
+
+var touchHandler = function (element) {
+
+    var startX, startY, posX, posY;
+
+    var touchStart = function (event) {
+        var object = event.changedTouches[0];
+        startX = parseInt(object.clientX);
+        startY = parseInt(object.clientY);
+        event.preventDefault();
+    };
+
+    this.numberOfElements = function (size) {
+        return Math.ceil(Math.abs(size) / tetris.elementSize);
+    };
+
+    var touchEnd = function (event) {
+        console.log('bbbbbb');
+        var object = event.changedTouches[0];
+        posX = parseInt(object.clientX);
+        posY = parseInt(object.clientY);
+
+        switch (calculateDirection(posX, posY)) {
+            case 'left':
+                tetris.actionLeft(this.numberOfElements(posX - startX));
+                break;
+            case 'right':
+                tetris.actionRight(this.numberOfElements(posX - startX));
+                break;
+            case 'down':
+                tetris.actionDown(this.numberOfElements(posY - startY));
+                break;
+            case 'none':
+                tetris.actionRotate();
+                break;
+        }
+        event.preventDefault();
+    };
+
+    element.addEventListener('touchstart', touchStart.bind(this), false);
+    element.addEventListener('touchmove', function (event) {
+        console.log('move');
+        event.preventDefault();
+    }, false);
+    element.addEventListener('touchend', touchEnd.bind(this), false);
+    element.addEventListener('touchcancel', touchEnd.bind(this), false);
+
+    var calculateDirection = function (posX, posY) {
+
+        var diffX = posX - startX,
+            diffY = posY - startY,
+            absDiffX = Math.abs(diffX),
+            absDiffY = Math.abs(diffY);
+
+        if (absDiffX < tetris.elementSize && absDiffY < tetris.elementSize) {
+            return 'none';
+        }
+
+        if (absDiffX > absDiffY) {
+            return (diffX > 0) ? 'right' : 'left';
+        } else {
+            return (diffY > 0) ? 'down' : 'up';
+        }
+    };
+
+};
+
+touchHandler(document.getElementById("canvas-overlay"));
 // 398
