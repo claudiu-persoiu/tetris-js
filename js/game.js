@@ -151,7 +151,7 @@ var classCanvas = function (height, width) {
     };
 };
 
-var canvas = new classCanvas(20, 15);
+var canvas = new classCanvas(20, 10);
 
 var classTetris = function (piecesCollection, canvas) {
     this.piecesCollection = piecesCollection;
