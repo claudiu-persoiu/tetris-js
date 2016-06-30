@@ -1,6 +1,6 @@
 .canvas-wrapper {
     width: 80%;
-    max-width: 500px;
+    max-width: 400px;
     display: block;
     position: relative;
     float: left;
@@ -15,7 +15,7 @@
 }
 
 .canvas-wrapper:after {
-    padding-top: 133.33%;
+    padding-top: 200.00%;
     display: block;
     content: '';
 }

@@ -254,6 +254,10 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.loadCurrentPiece = function (x, y) {
+        if (!this.pieceCurrent) {
+            return false;
+        }
+
         var pieceWidth = this.pieceCurrent.getWidth(),
             pieceHeight = this.pieceCurrent.getHeight(),
             celPositionX, celPositionY;
@@ -350,6 +354,9 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.actionRotate = function () {
+        if (!this.pieceCurrent) {
+            return;
+        }
         this.pieceCurrent.rotation();
         if (!tetris.loadCurrentPiece(0, 0)) {
             this.pieceCurrent.rotation();
@@ -427,15 +434,13 @@ tetris.reset();
 tetris.pause(true);
 
 document.addEventListener('keydown', function (event) {
-    var moved = tetris.movePiece(event);
-    if (moved) {
+    if (tetris.movePiece(event)) {
         event.preventDefault();
     }
 }, false);
 
 var touchHandler = function (element) {
-
-    var startX, startY, posX, posY;
+    var startX, startY, posX, posY, timeout, moved = false;
 
     var touchStart = function (event) {
         var object = event.changedTouches[0];
@@ -444,38 +449,45 @@ var touchHandler = function (element) {
         event.preventDefault();
     };
 
-    this.numberOfElements = function (size) {
-        return Math.ceil(Math.abs(size) / tetris.elementSize);
+    var touchEnd = function (event) {
+        if (!moved) {
+            tetris.actionRotate();
+        }
+        moved = false;
+        event.preventDefault();
     };
 
-    var touchEnd = function (event) {
-        console.log('bbbbbb');
+    var touchMoved = function (event) {
         var object = event.changedTouches[0];
         posX = parseInt(object.clientX);
         posY = parseInt(object.clientY);
+        moved = true;
 
-        switch (calculateDirection(posX, posY)) {
-            case 'left':
-                tetris.actionLeft(this.numberOfElements(posX - startX));
-                break;
-            case 'right':
-                tetris.actionRight(this.numberOfElements(posX - startX));
-                break;
-            case 'down':
-                tetris.actionDown(this.numberOfElements(posY - startY));
-                break;
-            case 'none':
-                tetris.actionRotate();
-                break;
+        if (timeout) {
+            clearTimeout(timeout);
         }
+
+        timeout = setTimeout(function () {
+            switch (calculateDirection(posX, posY)) {
+                case 'left':
+                    tetris.actionLeft(numberOfElements(posX - startX));
+                    break;
+                case 'right':
+                    tetris.actionRight(numberOfElements(posX - startX));
+                    break;
+                case 'down':
+                    tetris.actionDown(numberOfElements(posY - startY));
+                    break;
+            }
+            startX = posX;
+            startY = posY;
+        }, 50);
+
         event.preventDefault();
     };
 
     element.addEventListener('touchstart', touchStart.bind(this), false);
-    element.addEventListener('touchmove', function (event) {
-        console.log('move');
-        event.preventDefault();
-    }, false);
+    element.addEventListener('touchmove', touchMoved, false);
     element.addEventListener('touchend', touchEnd.bind(this), false);
     element.addEventListener('touchcancel', touchEnd.bind(this), false);
 
@@ -484,9 +496,10 @@ var touchHandler = function (element) {
         var diffX = posX - startX,
             diffY = posY - startY,
             absDiffX = Math.abs(diffX),
-            absDiffY = Math.abs(diffY);
+            absDiffY = Math.abs(diffY),
+            threshold = (tetris.elementSize / 3);
 
-        if (absDiffX < tetris.elementSize && absDiffY < tetris.elementSize) {
+        if (absDiffX < threshold && absDiffY < threshold) {
             return 'none';
         }
 
@@ -497,6 +510,9 @@ var touchHandler = function (element) {
         }
     };
 
+    var numberOfElements = function (size) {
+        return Math.ceil(Math.abs(size) / tetris.elementSize);
+    };
 };
 
 touchHandler(document.getElementById("canvas-overlay"));
