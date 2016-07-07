@@ -7,6 +7,7 @@ var classPiecesCollection = function () {
     };
 
     this.getRand = function () {
+        // TODO: make sure this piece returned is not the same reference
         var piece = pieces[Math.round(Math.random() * (pieces.length - 1))],
             times = Math.round(Math.random() * 4),
             i;
@@ -141,7 +142,6 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.displayTable = function () {
-
         this.canvasElement.innerHTML = "";
         this.canvasElement.appendChild(
             buildDOMTable(this.canvas.displayPiece(this.pieceCurrent, this.pieceCurrentX, this.pieceCurrentY))
@@ -346,6 +346,7 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.actionLeft = function (nrOfElements) {
+        // TODO: remove the for and nrOfElements
         for (var i = 0; i < nrOfElements; i++) {
             if (this.loadCurrentPiece(0, -1)) {
                 this.pieceCurrentY--;
@@ -449,6 +450,7 @@ var touchHandler = function (element) {
 
         switch (calculateDirection(interX, interY, posX, posY)) {
             case 'left':
+                // TODO: remove number of elements
                 actionPerformed = tetris.actionLeft(numberOfElements(posX - interX));
                 break;
             case 'right':
@@ -490,7 +492,8 @@ var touchHandler = function (element) {
             return (diffY > 0) ? 'down' : 'up';
         }
     };
-
+    
+    // TODO: remove method and references
     var numberOfElements = function (size) {
         return Math.ceil(Math.abs(size) / tetris.elementSize);
     };
