@@ -292,14 +292,16 @@ var classTetris = function (piecesCollection, canvas) {
             }
 
         }
-        for (i = 0; i < rowsToEliminate.length; i++) {
-            this.eliminateRows(rowsToEliminate[i])
-        }
+
+        rowsToEliminate.forEach(function (row) {
+            eliminateRow(row);
+        });
+
         return rowsToEliminate.length;
     };
-    this.eliminateRows = function (rows) {
+    var eliminateRow = function (rowPosition) {
         var i, j;
-        for (i = rows; i > 0; i--) {
+        for (i = rowPosition; i > 0; i--) {
             for (j = 0; j < this.canvas.getWidth(); j++) {
                 this.canvas.set(i, j, this.canvas.get(i - 1, j))
             }
