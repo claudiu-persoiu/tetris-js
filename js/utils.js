@@ -1,7 +1,7 @@
-if(typeof Array.prototype.indexOf !== 'function') {
-    Array.prototype.indexOf = function(needle) {
-        for(var i = 0; i < this.length; i++) {
-            if(this[i] === needle) {
+if (typeof Array.prototype.indexOf !== 'function') {
+    Array.prototype.indexOf = function (needle) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i] === needle) {
                 return i;
             }
         }
@@ -11,19 +11,44 @@ if(typeof Array.prototype.indexOf !== 'function') {
 
 if (typeof Object.create !== 'function') {
     Object.create = function (o) {
-        function F() {}
+        function F() {
+        }
+
         F.prototype = o;
         return new F();
     };
 }
 
 if (typeof Array.prototype.forEach !== 'function') {
-    Array.prototype.forEach = function(callback){
-        for (var i = 0; i < this.length; i++){
+    Array.prototype.forEach = function (callback) {
+        for (var i = 0; i < this.length; i++) {
             callback.apply(this, [this[i], i, this]);
         }
     };
 }
+
+if (typeof  Array.prototype.findIndex !== 'function') {
+    Array.prototype.findIndex = function (predicate, thisValue) {
+        var arr = Object(this);
+        if (typeof predicate !== 'function') {
+            throw new TypeError();
+        }
+        for (var i = 0; i < arr.length; i++) {
+            if (i in arr) {  // skip holes
+                var elem = arr[i];
+                if (predicate.call(thisValue, elem, i, arr)) {
+                    return i;  // (1)
+                }
+            }
+        }
+        return -1;  // (2)
+    }
+}
+
+Array.prototype.getClone = function () {
+    var clone = JSON.parse(JSON.stringify(this));
+    return clone;
+};
 
 var generateEmptyMatrix = function (x, y) {
     var matrix = [], i, j;
