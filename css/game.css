@@ -14,7 +14,7 @@
     touch-action: none;
 }
 
-.canvas-wrapper:after {
+.canvas-wrapper:before {
     padding-top: 200.00%;
     display: block;
     content: '';
@@ -38,6 +38,25 @@
 
 #canvas-overlay {
     z-index: 10;
+    /* Internet Explorer 10 */
+    display:-ms-flexbox;
+    -ms-flex-pack:center;
+    -ms-flex-align:center;
+
+    /* Firefox */
+    display:-moz-box;
+    -moz-box-pack:center;
+    -moz-box-align:center;
+
+    /* Safari, Opera, and Chrome */
+    display:-webkit-box;
+    -webkit-box-pack:center;
+    -webkit-box-align:center;
+
+    /* W3C */
+    display:box;
+    box-pack:center;
+    box-align:center;
 }
 
 #canvas table {

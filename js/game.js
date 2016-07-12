@@ -1,41 +1,42 @@
 var classPiecesCollection = function () {
     var pieces = [];
 
-    this.addPiece = function (c) {
-        pieces.push(c);
-        return this;
-    };
+    return {
+        addPiece: function (c) {
+            pieces.push(c);
+            return this;
+        },
+        getRand: function () {
+            var piece = pieces[Math.round(Math.random() * (pieces.length - 1))].getClone(),
+                times = Math.round(Math.random() * 4);
 
-    this.getRand = function () {
-        var piece = pieces[Math.round(Math.random() * (pieces.length - 1))].getClone(),
-            times = Math.round(Math.random() * 4),
-            i;
+            for (var i = 0; i < times; i++) {
+                piece.rotation()
+            }
 
-        for (i = 0; i < times; i++) {
-            piece.rotation()
+            return piece;
         }
-
-        return piece;
-    };
+    }
 };
 
-var classPiece = function (width, height, color, elements) {
-    var elements = elements.getClone();
-    var matrix = generateEmptyMatrix(width, height);
-    var nextContainer = document.getElementById("next");
+var pieceFactory = function (width, height, color, elements) {
+    var elements = elements.getClone(),
+        matrix = generateEmptyMatrix(width, height),
+        nextContainer = document.getElementById("next"),
+        currentFactory = arguments.callee;
 
-    this.set = function (x, y) {
+    var set = function (x, y) {
         matrix[x][y] = color
+    };
+    var get = function (x, y) {
+        return matrix[x][y]
     };
 
     elements.forEach(function (element) {
-        this.set(element[0], element[1]);
+        set(element[0], element[1]);
     }.bind(this));
 
-    this.get = function (x, y) {
-        return matrix[x][y]
-    };
-    this.rotation = function () {
+    var rotation = function () {
         var rotated = [],
             i, j;
 
@@ -47,43 +48,62 @@ var classPiece = function (width, height, color, elements) {
         }
         matrix = rotated;
     };
-    this.preview = function () {
-        nextContainer.innerHTML = '';
-        nextContainer.appendChild(buildDOMTable(this));
-    };
-    this.getWidth = function () {
-        return width;
-    };
-    this.getHeight = function () {
-        return height;
-    };
-    this.getClone = function () {
-        return new this.constructor(width, height, color, elements);
-    };
-    this.forEach = function (callback) {
+
+    var forEach = function (callback) {
         matrix.forEach(function (row, x) {
             row.forEach(function (color, y) {
                 callback(color, x, y);
             })
         });
     };
-    this.getFirstRowInPiece = function () {
-
+    var getFirstRowInPiece = function () {
         return height - 1 - matrix.getClone().reverse().findIndex(function (row, index) {
                 return row.filter(function (color) {
                         return color != 0;
                     }).length > 0;
             });
     };
+
+    return {
+        getFirstRowInPiece: function () {
+            return getFirstRowInPiece();
+        },
+        forEach: function (callback) {
+            forEach(callback);
+        },
+        getClone: function () {
+            return currentFactory(width, height, color, elements);
+        },
+        getHeight: function () {
+            return height;
+        },
+        getWidth: function () {
+            return width;
+        },
+        get: function (x, y) {
+            return get(x, y);
+        },
+        set: function (x, y) {
+            return set(x, y);
+        },
+        preview: function () {
+            nextContainer.innerHTML = '';
+            nextContainer.appendChild(buildDOMTable(this));
+        },
+        rotation: function () {
+            rotation();
+        }
+    }
 };
-var piecesCollection = new classPiecesCollection();
-piecesCollection.addPiece(new classPiece(3, 3, "#FF0000", [[0, 0], [0, 1], [1, 1], [1, 2]]))
-    .addPiece(new classPiece(4, 4, "#00FF00", [[1, 0], [1, 1], [1, 2], [1, 3]]))
-    .addPiece(new classPiece(3, 3, "#2984D7", [[1, 1], [2, 0], [2, 1], [1, 2]]))
-    .addPiece(new classPiece(3, 3, "#CCCCCC", [[1, 1], [2, 0], [2, 1], [2, 2]]))
-    .addPiece(new classPiece(4, 4, "#DE397B", [[1, 1], [1, 2], [2, 1], [2, 2]]))
-    .addPiece(new classPiece(3, 3, "#259463", [[1, 0], [1, 1], [1, 2], [2, 2]]))
-    .addPiece(new classPiece(3, 3, "#BD6B31", [[2, 0], [2, 1], [2, 2], [1, 2]]));
+
+var piecesCollection = classPiecesCollection();
+piecesCollection.addPiece(pieceFactory(3, 3, "#FF0000", [[0, 0], [0, 1], [1, 1], [1, 2]]))
+    .addPiece(pieceFactory(4, 4, "#00FF00", [[1, 0], [1, 1], [1, 2], [1, 3]]))
+    .addPiece(pieceFactory(3, 3, "#2984D7", [[1, 1], [2, 0], [2, 1], [1, 2]]))
+    .addPiece(pieceFactory(3, 3, "#CCCCCC", [[1, 1], [2, 0], [2, 1], [2, 2]]))
+    .addPiece(pieceFactory(4, 4, "#DE397B", [[1, 1], [1, 2], [2, 1], [2, 2]]))
+    .addPiece(pieceFactory(3, 3, "#259463", [[1, 0], [1, 1], [1, 2], [2, 2]]))
+    .addPiece(pieceFactory(3, 3, "#BD6B31", [[2, 0], [2, 1], [2, 2], [1, 2]]));
 
 var classCanvas = function (height, width) {
     var matrix = [], that = this;
@@ -337,22 +357,21 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.actionDown = function () {
-        if (this.testCurrentPiecePosition(1, 0)) {
-            this.pieceCurrentX++;
-            return true;
-        }
+        return this.move({x: 1, y: 0});
     };
 
     this.actionLeft = function () {
-        if (this.testCurrentPiecePosition(0, -1)) {
-            this.pieceCurrentY--;
-            return true;
-        }
+        return this.move({x: 0, y: -1});
     };
 
     this.actionRight = function () {
-        if (this.testCurrentPiecePosition(0, +1)) {
-            this.pieceCurrentY++;
+        return this.move({x: 0, y: 1});
+    };
+
+    this.move = function (moveMatrix) {
+        if (this.testCurrentPiecePosition(moveMatrix.x, moveMatrix.y)) {
+            this.pieceCurrentX += moveMatrix.x;
+            this.pieceCurrentY += moveMatrix.y;
             return true;
         }
     };
