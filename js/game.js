@@ -1,164 +1,8 @@
-var classPiecesCollection = function () {
-    var pieces = [];
-
-    return {
-        addPiece: function (c) {
-            pieces.push(c);
-            return this;
-        },
-        getRand: function () {
-            var piece = pieces[Math.round(Math.random() * (pieces.length - 1))].getClone(),
-                times = Math.round(Math.random() * 4);
-
-            for (var i = 0; i < times; i++) {
-                piece.rotation()
-            }
-
-            return piece;
-        }
-    }
-};
-
-var pieceFactory = function (width, height, color, elements) {
-    var elements = elements.getClone(),
-        matrix = generateEmptyMatrix(width, height),
-        nextContainer = document.getElementById("next"),
-        currentFactory = arguments.callee;
-
-    var set = function (x, y) {
-        matrix[x][y] = color
-    };
-    var get = function (x, y) {
-        return matrix[x][y]
-    };
-
-    elements.forEach(function (element) {
-        set(element[0], element[1]);
-    }.bind(this));
-
-    var rotation = function () {
-        var rotated = [],
-            i, j;
-
-        for (i = 0; i < width; i++) {
-            rotated[i] = [];
-            for (j = 0; j < height; j++) {
-                rotated[i][j] = matrix[width - j - 1][i];
-            }
-        }
-        matrix = rotated;
-    };
-
-    var forEach = function (callback) {
-        matrix.forEach(function (row, x) {
-            row.forEach(function (color, y) {
-                callback(color, x, y);
-            })
-        });
-    };
-    var getFirstRowInPiece = function () {
-        return height - 1 - matrix.getClone().reverse().findIndex(function (row, index) {
-                return row.filter(function (color) {
-                        return color != 0;
-                    }).length > 0;
-            });
-    };
-
-    return {
-        getFirstRowInPiece: function () {
-            return getFirstRowInPiece();
-        },
-        forEach: function (callback) {
-            forEach(callback);
-        },
-        getClone: function () {
-            return currentFactory(width, height, color, elements);
-        },
-        getHeight: function () {
-            return height;
-        },
-        getWidth: function () {
-            return width;
-        },
-        get: function (x, y) {
-            return get(x, y);
-        },
-        set: function (x, y) {
-            return set(x, y);
-        },
-        preview: function () {
-            nextContainer.innerHTML = '';
-            nextContainer.appendChild(buildDOMTable(this));
-        },
-        rotation: function () {
-            rotation();
-        }
-    }
-};
-
-var piecesCollection = classPiecesCollection();
-piecesCollection.addPiece(pieceFactory(3, 3, "#FF0000", [[0, 0], [0, 1], [1, 1], [1, 2]]))
-    .addPiece(pieceFactory(4, 4, "#00FF00", [[1, 0], [1, 1], [1, 2], [1, 3]]))
-    .addPiece(pieceFactory(3, 3, "#2984D7", [[1, 1], [2, 0], [2, 1], [1, 2]]))
-    .addPiece(pieceFactory(3, 3, "#CCCCCC", [[1, 1], [2, 0], [2, 1], [2, 2]]))
-    .addPiece(pieceFactory(4, 4, "#DE397B", [[1, 1], [1, 2], [2, 1], [2, 2]]))
-    .addPiece(pieceFactory(3, 3, "#259463", [[1, 0], [1, 1], [1, 2], [2, 2]]))
-    .addPiece(pieceFactory(3, 3, "#BD6B31", [[2, 0], [2, 1], [2, 2], [1, 2]]));
-
-var classCanvas = function (height, width) {
-    var matrix = [], that = this;
-
-    var generateEmptyCanvas = function () {
-        matrix = generateEmptyMatrix(height, width);
-    };
-
-    generateEmptyCanvas();
-
-    var displayPiece = function (piece, x, y) {
-        var tempCanvas = new that.constructor(height, width);
-        tempCanvas.setMatrix(matrix);
-
-        piece.forEach(function (color, i, j) {
-            if ((i + x) >= 0 && color != 0) {
-                tempCanvas.set((i + x), (j + y), color);
-            }
-        });
-
-        return tempCanvas;
-    };
-
-    return {
-        get: function (x, y) {
-            return matrix[x][y];
-        },
-        set: function (x, y, color) {
-            matrix[x][y] = color;
-        },
-        setMatrix: function (newMatrix) {
-            matrix = newMatrix.getClone();
-        },
-        reset: function () {
-            generateEmptyCanvas();
-        },
-        getWidth: function () {
-            return width;
-        },
-        getHeight: function () {
-            return height;
-        },
-        displayPiece: function (piece, x, y) {
-            return displayPiece(piece, x, y);
-        }
-    };
-};
-
-var canvas = new classCanvas(20, 10);
-
-var classTetris = function (piecesCollection, canvas) {
+var classTetris = function (piecesCollection, canvas, displayHandler) {
     this.piecesCollection = piecesCollection;
     this.canvas = canvas;
-    this.canvasElement = document.getElementById("canvas");
-    this.elementSize = this.canvasElement.offsetWidth / this.canvas.getWidth();
+    this.displayHandler = displayHandler;
+    this.elementSize = this.displayHandler.getMainTableWidth() / this.canvas.getWidth();
 
     this.reset = function () {
         this.pieceCurrent = null;
@@ -176,9 +20,8 @@ var classTetris = function (piecesCollection, canvas) {
     };
 
     this.displayTable = function () {
-        this.canvasElement.innerHTML = "";
-        this.canvasElement.appendChild(
-            buildDOMTable(this.canvas.displayPiece(this.pieceCurrent, this.pieceCurrentX, this.pieceCurrentY))
+        this.displayHandler.displayMainTable(
+            this.canvas.displayPiece(this.pieceCurrent, this.pieceCurrentX, this.pieceCurrentY)
         );
     };
 
@@ -218,25 +61,10 @@ var classTetris = function (piecesCollection, canvas) {
         this.pieceCurrent = this.pieceNext;
         this.pieceNext = this.piecesCollection.getRand();
 
-        this.pieceNext.preview();
+        this.pieceNext.preview(this.displayHandler.previewPiece);
 
         this.pieceCurrentX = -this.pieceCurrent.getFirstRowInPiece();
         this.pieceCurrentY = this.getWidthCenter();
-    };
-
-    this.displayPiece = function () {
-        var currentWidth = this.pieceCurrent.getWidth();
-        var currentHeight = this.pieceCurrent.getHeight();
-        var currentX = this.pieceCurrentX;
-        var currentY = this.pieceCurrentY;
-
-        for (var x = 0; x < currentWidth; x++) {
-            for (var y = 0; y < currentHeight; y++) {
-                if ((currentX + x) >= 0 && this.pieceCurrent.get(x, y) != 0) {
-                    document.getElementById("cellX" + (x + currentX) + "Y" + (y + currentY)).bgColor = this.pieceCurrent.get(x, y);
-                }
-            }
-        }
     };
 
     this.testCurrentPiecePosition = function (x, y) {
@@ -310,19 +138,12 @@ var classTetris = function (piecesCollection, canvas) {
 
         }
 
+        var that = this;
         rowsToEliminate.forEach(function (row) {
-            eliminateRow(row);
+            that.canvas.eliminateRow(row);
         });
 
         return rowsToEliminate.length;
-    };
-    var eliminateRow = function (rowPosition) {
-        var i, j;
-        for (i = rowPosition; i > 0; i--) {
-            for (j = 0; j < this.canvas.getWidth(); j++) {
-                this.canvas.set(i, j, this.canvas.get(i - 1, j))
-            }
-        }
     };
 
     this.pause = function (play) {
@@ -378,7 +199,17 @@ var classTetris = function (piecesCollection, canvas) {
 };
 
 window.onload = function () {
-    var tetris = new classTetris(piecesCollection, canvas);
+
+    var piecesCollection = pieceFactoryCollection();
+    piecesCollection.addPiece(pieceFactory(3, 3, "#FF0000", [[0, 0], [0, 1], [1, 1], [1, 2]]))
+        .addPiece(pieceFactory(4, 4, "#00FF00", [[1, 0], [1, 1], [1, 2], [1, 3]]))
+        .addPiece(pieceFactory(3, 3, "#2984D7", [[1, 1], [2, 0], [2, 1], [1, 2]]))
+        .addPiece(pieceFactory(3, 3, "#CCCCCC", [[1, 1], [2, 0], [2, 1], [2, 2]]))
+        .addPiece(pieceFactory(4, 4, "#DE397B", [[1, 1], [1, 2], [2, 1], [2, 2]]))
+        .addPiece(pieceFactory(3, 3, "#259463", [[1, 0], [1, 1], [1, 2], [2, 2]]))
+        .addPiece(pieceFactory(3, 3, "#BD6B31", [[2, 0], [2, 1], [2, 2], [1, 2]]));
+
+    var tetris = new classTetris(piecesCollection, canvasFactory(20, 10), displayHandler());
     tetris.reset();
     tetris.pause(true);
 
