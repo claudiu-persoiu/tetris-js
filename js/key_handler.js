@@ -1,7 +1,7 @@
 var keyHandler = function (game) {
 
     var movePiece = function (event) {
-        if (game.pieceCurrent == null || !game.timer) {
+        if (!game.playing()) {
             return false;
         }
 

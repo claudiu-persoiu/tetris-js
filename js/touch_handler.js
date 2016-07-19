@@ -1,5 +1,6 @@
 var touchHandler = function (game, element) {
-    var originalX, originalY, interX, interY, posX, posY;
+    var originalX, originalY, interX, interY, posX, posY,
+        threshold = (game.getElementSize() / 3);
 
     var touchStart = function (event) {
         [originalX, originalY] = [interX, interY] = [posX, posY] = getCoordsAndPreventDefault(event);
@@ -52,8 +53,7 @@ var touchHandler = function (game, element) {
         var diffX = posX - oldX,
             diffY = posY - oldY,
             absDiffX = Math.abs(diffX),
-            absDiffY = Math.abs(diffY),
-            threshold = (game.elementSize / 3);
+            absDiffY = Math.abs(diffY);
 
         if (absDiffX < threshold && absDiffY < threshold) {
             return 'none';
