@@ -5,8 +5,7 @@
     <link rel="icon" type="image/png" href="media/favicon.ico">
     <link rel="stylesheet" href="css/game.css">
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-    <meta name="viewport"
-          content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="viewport" content="width=480,user-scalable=0">
 </head>
 
 <body>
@@ -48,8 +47,7 @@
 
 
         var tetris = tetrisFactory(piecesCollection, canvasFactory(20, 10), displayHandler(), scoreHandler(document.getElementById("score-board")));
-        tetris.reset();
-        tetris.pause(true);
+        tetris.pause();
 
         keyHandler(tetris);
 

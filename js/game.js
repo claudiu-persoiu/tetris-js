@@ -1,24 +1,26 @@
 var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHandler) {
-    var elementSize = displayHandler.getMainTableWidth() / canvas.getWidth();
-    var currentPiece = null,
+    var elementSize = displayHandler.getMainTableWidth() / canvas.getWidth(),
+        STATUS_PLAYING = 1,
+        STATUS_FINISHED = 2,
+        STATUS_PAUSED = 3,
+        currentPiece = null,
         currentPieceX, currentPieceY,
         speed = 1000,
-        timer = false,
-        status = false,
+        timer,
+        status = STATUS_FINISHED,
         pieceNext,
         playButton = document.getElementById("play");
+
+    playButton.addEventListener('click', function () {
+        pause();
+    }.bind(this), false);
 
     var reset = function () {
         currentPiece = null;
         scoreHandler.reset();
         speed = 1000;
-        timer = false;
-        status = false;
         canvas.reset();
         playButton.innerHTML = "Pause";
-        playButton.addEventListener('click', function () {
-            pause(true);
-        }.bind(this), false);
     };
 
     var displayTable = function () {
@@ -99,8 +101,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
 
     var endGame = function () {
         clearInterval(timer);
-        timer = false;
-        status = true;
+        status = STATUS_FINISHED;
         alert("game over!");
         playButton.innerHTML = "Start!";
     };
@@ -146,20 +147,21 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
         return rowsToEliminate.length;
     };
 
-    var pause = function (playing) {
-        if (timer) {
+    var pause = function () {
+        if (status == STATUS_PLAYING) {
             clearInterval(timer);
-            timer = false;
-        } else if (playing) {
-            if (status == true) {
+            status = STATUS_PAUSED;
+        } else {
+            if (status == STATUS_FINISHED) {
                 reset()
             }
+            status = STATUS_PLAYING;
             timer = setInterval(function () {
                 play();
             }, speed);
         }
 
-        playButton.innerHTML = timer ? "pause" : "play";
+        playButton.innerHTML = status == STATUS_PLAYING ? "pause" : "play";
     };
 
     var actionRotate = function () {
@@ -201,8 +203,8 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
         actionRotate: function () {
             return actionRotate();
         },
-        pause: function (play) {
-            return pause(play);
+        pause: function () {
+            return pause();
         },
         displayTable: function () {
             displayTable();
@@ -211,7 +213,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
             return elementSize;
         },
         playing: function () {
-            return timer !== false;
+            return status == STATUS_PLAYING;
         }
     }
 };
