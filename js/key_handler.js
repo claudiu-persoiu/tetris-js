@@ -1,16 +1,23 @@
 var keyHandler = function (game) {
 
     var movePiece = function (event) {
-        if (!game.playing()) {
-            return false;
-        }
 
         var KEY_UP = 38,
             KEY_DOWN = 40,
             KEY_LEFT = 37,
             KEY_RIGHT = 39,
+            KEY_P = 80,
             keyCode = event.which || window.event.keyCode,
             actionPerformed = false;
+
+        if (keyCode == KEY_P) {
+            game.pause();
+            return;
+        }
+
+        if (!game.playing()) {
+            return false;
+        }
 
         switch (keyCode) {
             case KEY_UP:
