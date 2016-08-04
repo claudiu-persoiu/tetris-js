@@ -38,6 +38,7 @@
 <script src="js/touch_handler.js"></script>
 <script src="js/display_handler.js"></script>
 <script src="js/score_handler.js"></script>
+<script src="js/state_handler.js"></script>
 <script>
 
     window.onload = function () {
@@ -50,13 +51,15 @@
                 .addPiece(pieceFactory(3, 3, "#259463", [[1, 0], [1, 1], [1, 2], [2, 2]]))
                 .addPiece(pieceFactory(3, 3, "#BD6B31", [[2, 0], [2, 1], [2, 2], [1, 2]]));
 
-
-        var tetris = tetrisFactory(piecesCollection, canvasFactory(20, 10), displayHandler(), scoreHandler(document.getElementById("score-board")));
-        tetris.pause();
+        var tetris = tetrisFactory(piecesCollection, canvasFactory(20, 10), displayHandler(), scoreHandler(document.getElementById("score-board")), stateHandler());
 
         keyHandler(tetris);
 
         touchHandler(tetris, document.getElementById("canvas-overlay"));
+
+        tetris.restoreFromState();
+
+        tetris.pause();
     };
 </script>
 </body>

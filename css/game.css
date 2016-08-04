@@ -75,6 +75,13 @@ body, button {
     box-align:center;
 }
 
+.translucent {
+    opacity: 0.8;
+    background: white;
+    color: #776E65;
+    font-size: 30px;
+}
+
 #canvas table {
     width: 100%;
     height: 100%;
@@ -134,4 +141,5 @@ body, button {
 .title {
     font-size: 29px;
     padding: 0 0 20px;
+    color: #776E65;
 }

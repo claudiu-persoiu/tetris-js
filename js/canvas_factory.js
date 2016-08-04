@@ -19,6 +19,9 @@ var canvasFactory = function (height, width) {
         setMatrix: function (newMatrix) {
             matrix = newMatrix.getClone();
         },
+        getMatrix: function () {
+            return matrix;
+        },
         reset: function () {
             generateEmptyCanvas();
         },

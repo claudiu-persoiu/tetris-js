@@ -16,6 +16,13 @@ var scoreHandler = function (element) {
         addElement: function () {
             score++;
             publishScore();
+        },
+        getState: function () {
+            return score;
+        },
+        setState: function (newState) {
+            score = newState;
+            publishScore();
         }
     }
 };

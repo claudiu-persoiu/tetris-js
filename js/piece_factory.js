@@ -70,6 +70,23 @@ var pieceFactory = function (width, height, color, elements) {
         },
         rotation: function () {
             rotation();
+        },
+        getState: function () {
+            var tempElements = [];
+            matrix.forEach(function (row, x) {
+                row.forEach(function (color, y) {
+                    if (color) {
+                        tempElements.push([x, y]);
+                    }
+                })
+            });
+
+            return {
+                width: width,
+                height: height,
+                color: color,
+                elements: tempElements,
+            }
         }
     }
 };

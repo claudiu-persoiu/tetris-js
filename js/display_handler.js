@@ -1,7 +1,8 @@
 var displayHandler = function () {
 
     var nextElement = document.getElementById("next"),
-        canvasElement = document.getElementById("canvas");
+        canvasElement = document.getElementById("canvas"),
+        overlay = document.getElementById("canvas-overlay");
 
 
     var displayMatrix = function (element, matrix) {
@@ -20,6 +21,18 @@ var displayHandler = function () {
         },
         getMainTableWidth: function () {
             return canvasElement.offsetWidth;
+        },
+        pause: function () {
+            overlay.className = "translucent";
+            overlay.innerHTML = "paused...";
+        },
+        play: function () {
+            overlay.className = "";
+            overlay.innerHTML = "";
+        },
+        finished: function () {
+            overlay.className = "translucent";
+            overlay.innerHTML = "game over...";
         }
     }
 };

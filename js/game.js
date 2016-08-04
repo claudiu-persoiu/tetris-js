@@ -1,4 +1,4 @@
-var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHandler) {
+var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHandler, stateHandler) {
     var elementSize = displayHandler.getMainTableWidth() / canvas.getWidth(),
         STATUS_PLAYING = 1,
         STATUS_FINISHED = 2,
@@ -20,7 +20,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
         scoreHandler.reset();
         speed = 1000;
         canvas.reset();
-        playButton.innerHTML = "Pause";
+        playButton.innerHTML = "pause";
     };
 
     var displayTable = function () {
@@ -42,6 +42,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
         }
 
         displayTable();
+        saveState();
 
         if (testCurrentPiecePosition(1, 0)) {
             currentPieceX++
@@ -102,8 +103,9 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
     var endGame = function () {
         clearInterval(timer);
         status = STATUS_FINISHED;
-        alert("game over!");
-        playButton.innerHTML = "Start!";
+        displayHandler.finished();
+        stateHandler.clearState();
+        playButton.innerHTML = "play";
     };
 
     var embedCurrentPiece = function () {
@@ -137,7 +139,6 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
             if (fullRow == true) {
                 rowsToEliminate.push(i)
             }
-
         }
 
         rowsToEliminate.forEach(function (row) {
@@ -150,11 +151,13 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
     var pause = function () {
         if (status == STATUS_PLAYING) {
             clearInterval(timer);
+            displayHandler.pause();
             status = STATUS_PAUSED;
         } else {
             if (status == STATUS_FINISHED) {
                 reset()
             }
+            displayHandler.play();
             status = STATUS_PLAYING;
             timer = setInterval(function () {
                 play();
@@ -187,6 +190,30 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
         }
     };
 
+    var saveState = function () {
+        var state = {
+            canvas: canvas.getMatrix(),
+            currentPiece: currentPiece.getState(),
+            currentPieceX: currentPieceX,
+            currentPieceY: currentPieceY,
+            score: scoreHandler.getState()
+        };
+
+        stateHandler.saveState(state);
+    };
+
+    var restoreState = function (state) {
+        canvas.setMatrix(state.canvas);
+        var pieceState = state.currentPiece;
+
+        currentPieceX = state.currentPieceX;
+        currentPieceY = state.currentPieceY;
+        currentPiece = pieceFactory(pieceState.width, pieceState.height, pieceState.color, pieceState.elements);
+        scoreHandler.setState(state.score);
+        status = STATUS_PLAYING;
+        displayTable();
+    };
+
     return {
         reset: function () {
             return reset();
@@ -214,6 +241,15 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
         },
         playing: function () {
             return status == STATUS_PLAYING;
+        },
+        restoreFromState: function () {
+            var state = stateHandler.getState();
+
+            if (!state) {
+                return;
+            }
+
+            restoreState(state);
         }
     }
 };
