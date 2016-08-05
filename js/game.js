@@ -168,7 +168,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
     };
 
     var actionRotate = function () {
-        if (!currentPiece) {
+        if (!currentPiece || status != STATUS_PLAYING) {
             return;
         }
         currentPiece.rotation();
@@ -183,7 +183,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
     };
 
     var move = function (moveMatrix) {
-        if (testCurrentPiecePosition(moveMatrix.x, moveMatrix.y)) {
+        if (testCurrentPiecePosition(moveMatrix.x, moveMatrix.y) && status == STATUS_PLAYING) {
             currentPieceX += moveMatrix.x;
             currentPieceY += moveMatrix.y;
             return true;

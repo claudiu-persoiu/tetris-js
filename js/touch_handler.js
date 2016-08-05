@@ -1,6 +1,6 @@
 var touchHandler = function (game, element) {
     var originalX, originalY, interX, interY, posX, posY,
-        threshold = (game.getElementSize() / 3);
+        threshold = (game.getElementSize() / 2);
 
     var touchStart = function (event) {
         [originalX, originalY] = [interX, interY] = [posX, posY] = getCoordsAndPreventDefault(event);
