@@ -8,7 +8,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
         speed = 1000,
         timer,
         status = STATUS_FINISHED,
-        pieceNext,
+        nextPiece,
         playButton = document.getElementById("play");
 
     playButton.addEventListener('click', function () {
@@ -59,14 +59,14 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
     };
 
     var getNextPiece = function () {
-        if (!pieceNext) {
-            pieceNext = piecesCollection.getRand();
+        if (!nextPiece) {
+            nextPiece = piecesCollection.getRand();
         }
 
-        currentPiece = pieceNext;
-        pieceNext = piecesCollection.getRand();
+        currentPiece = nextPiece;
+        nextPiece = piecesCollection.getRand();
 
-        pieceNext.preview(displayHandler.previewPiece);
+        nextPiece.preview(displayHandler.previewPiece);
 
         currentPieceX = -currentPiece.getFirstRowInPiece();
         currentPieceY = getWidthCenter();
@@ -196,6 +196,7 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
             currentPiece: currentPiece.getState(),
             currentPieceX: currentPieceX,
             currentPieceY: currentPieceY,
+            nextPiece: nextPiece ? nextPiece.getState() : false,
             score: scoreHandler.getState()
         };
 
@@ -204,14 +205,19 @@ var tetrisFactory = function (piecesCollection, canvas, displayHandler, scoreHan
 
     var restoreState = function (state) {
         canvas.setMatrix(state.canvas);
-        var pieceState = state.currentPiece;
+        var currentPieceState = state.currentPiece,
+            nextPieceState = state.nextPiece;
 
         currentPieceX = state.currentPieceX;
         currentPieceY = state.currentPieceY;
-        currentPiece = pieceFactory(pieceState.width, pieceState.height, pieceState.color, pieceState.elements);
+        currentPiece = pieceFactory(currentPieceState.width, currentPieceState.height, currentPieceState.color, currentPieceState.elements);
         scoreHandler.setState(state.score);
         status = STATUS_PLAYING;
         displayTable();
+        if (nextPieceState) {
+            nextPiece = pieceFactory(nextPieceState.width, nextPieceState.height, nextPieceState.color, nextPieceState.elements);
+            nextPiece.preview(displayHandler.previewPiece);
+        }
     };
 
     return {
